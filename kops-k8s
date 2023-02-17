@@ -1,0 +1,34 @@
+sudo apt update -y
+# install aws cli
+# install kops
+# install kubecrl
+# create iam role for ec2-instance 
+# create s3 bucket
+aws s3 mb s3://sreenudevops.k8s.local
+# configure environment variable
+#~/.bashrc 
+export NAME=sreenudevops.k8s.local
+export KOPS_STATE_STORE=s3://sreenudevops.k8s.local
+# source .bashrc
+
+# generate ssh-keygen
+----------------
+# create kops cluster
+
+kops create cluster \
+--state=${KOPS_STATE_STORE} \
+--node-count=2 \
+--master-size=t3.medium \
+--node-size=t3.medium \
+--zones=ap-south-1a,ap-south-1b \
+--name=${KOPS_CLUSTER_NAME} \
+--dns private \
+--master-count 1
+
+# create kops secret
+kops create secret --name ${NAME} sshpublickey admin -i ~/.ssh/id_rsa.pub
+kops update cluster ${NAME} --yes
+kops validate cluster
+kops update cluster --yes --admin
+kops rolling-update cluster
+kubectl get pods
